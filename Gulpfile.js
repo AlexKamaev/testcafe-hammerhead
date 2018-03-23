@@ -164,7 +164,7 @@ gulp.task('lint', () => {
         .pipe(eslint.failAfterError());
 });
 
-gulp.task('build', ['client-scripts', 'server-scripts', 'templates', 'lint']);
+gulp.task('build', ['client-scripts', 'server-scripts', 'templates']);
 
 // Test
 gulp.task('test-server', ['build'], () => {
