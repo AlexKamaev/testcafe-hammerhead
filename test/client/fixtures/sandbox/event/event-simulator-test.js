@@ -475,6 +475,71 @@ if (!browserUtils.isFirefox) {
     });
 }
 
+test('mouse event buttons properties', function () {
+    var actualLog   = {};
+    var expectedLog = {};
+
+    var eventHandler = function (e) {
+        actualLog[e.type] = actualLog[e.type] || [];
+
+        actualLog[e.type].push({
+            button:  e.button,
+            buttons: e.buttons,
+            which:   e.which
+        });
+    };
+
+    var fillExpectedLog = function (type, button, buttons, which) {
+        expectedLog[type] = expectedLog[type] || [];
+
+        // NOTE: Safari doesn't support buttons property
+        expectedLog[type].push({
+            button:  button,
+            buttons: browserUtils.isSafari ? void 0 : buttons,
+            which:   which
+        });
+    };
+
+    fillExpectedLog('click', 0, 1, 1);
+    fillExpectedLog('dblclick', 0, 1, 1);
+    fillExpectedLog('contextmenu', 2, 2, 3);
+    fillExpectedLog('mousedown', 0, 1, 1);
+    fillExpectedLog('mousedown', 2, 2, 3);
+    fillExpectedLog('mouseup', 0, 1, 1);
+    fillExpectedLog('mouseup', 2, 2, 3);
+    fillExpectedLog('mouseover', 0, 1, 1);
+    fillExpectedLog('mouseover', 0, 1, 1);
+    fillExpectedLog('mouseout', 0, 1, 1);
+    fillExpectedLog('mouseenter', 0, 1, 1);
+    fillExpectedLog('mouseleave', 0, 1, 1);
+
+    domElement.addEventListener('click', eventHandler);
+    domElement.addEventListener('dblclick', eventHandler);
+    domElement.addEventListener('contextmenu', eventHandler);
+    domElement.addEventListener('mousedown', eventHandler);
+    domElement.addEventListener('mouseup', eventHandler);
+    domElement.addEventListener('mouseover', eventHandler);
+    domElement.addEventListener('mouseover', eventHandler);
+    domElement.addEventListener('mouseout', eventHandler);
+    domElement.addEventListener('mouseenter', eventHandler);
+    domElement.addEventListener('mouseleave', eventHandler);
+
+    eventSimulator.click(domElement);
+    eventSimulator.dblclick(domElement);
+    eventSimulator.contextmenu(domElement);
+    eventSimulator.mousedown(domElement);
+    eventSimulator.mousedown(domElement, { button: eventUtils.BUTTON.right, buttons: eventUtils.BUTTONS_PARAMETER.rightButton });
+    eventSimulator.mouseup(domElement);
+    eventSimulator.mouseup(domElement, { button: eventUtils.BUTTON.right, buttons: eventUtils.BUTTONS_PARAMETER.rightButton });
+    eventSimulator.mouseover(domElement);
+    eventSimulator.mouseover(domElement);
+    eventSimulator.mouseout(domElement);
+    eventSimulator.mouseenter(domElement);
+    eventSimulator.mouseleave(domElement);
+
+    deepEqual(actualLog, expectedLog);
+});
+
 module('regression');
 
 if (browserUtils.isIE) {
@@ -692,3 +757,4 @@ test('wrong type of the blur event (GH-947)', function () {
     eventSimulator.blur(domElement);
     ok(raised);
 });
+

@@ -13,13 +13,6 @@ export const BUTTONS_PARAMETER = {
     rightButton: 2
 };
 
-export const WHICH_PARAMETER = {
-    noButton:     0,
-    leftButton:   1,
-    middleButton: 2,
-    rightButton:  3
-};
-
 export const KEYBOARD_MODIFIERS_PARAMETER = {
     altKey:   'Alt',
     ctrlKey:  'Control',
