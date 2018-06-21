@@ -2,7 +2,7 @@
 
 mkdir ../testcafe
 cd ../testcafe
-git clone https://github.com/DevExpress/testcafe .
+git clone https://github.com/AlexKamaev/testcafe -b gh-2056
 
 npm install testcafe-hammerhead ../testcafe-hammerhead --save
 npm i --loglevel error
