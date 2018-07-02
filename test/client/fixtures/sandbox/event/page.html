@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <script>
+        var handler = function (e) {
+            console.log('type: ' + e.type);
+            console.log('button: ' + e.button);
+            console.log('buttons: ' + e.buttons);
+            console.log('which: ' + e.which);
+        }
+
+        // window.addEventListener('mousemove', handler);
+        window.addEventListener('mouseenter', handler);
+        // window.addEventListener('mouseover', handler);
+        // window.addEventListener('mousedown', handler);
+        // window.addEventListener('mouseup', handler);
+        // window.addEventListener('click', handler);
+        // window.addEventListener('dblclick', handler);
+        // window.addEventListener('contextmenu', handler);
+    </script>
+    <div style="width: 100px; height: 100px; background: red;" onmouseenter="handler(event)">test</div>
+</body>
+</html>
