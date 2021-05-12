@@ -27,6 +27,8 @@ function findChildNode (node: Node, predicate: Function, depth = 0): Node {
     // @ts-ignore
     const nodeKeys: (keyof Node)[] = objectKeys(node);
 
+    debugger;
+
     if (predicate(node, depth))
         return node;
 
@@ -40,7 +42,7 @@ function findChildNode (node: Node, predicate: Function, depth = 0): Node {
 
             for (const nthNode of childNodes) {
                 // NOTE: Some items of ArrayExpression can be null
-                if (nthNode) {
+                if (nthNode && nthNode.type !== Syntax.BlockStatement) {
                     const resultNode = findChildNode(nthNode, predicate, depth + 1);
 
                     if (resultNode)
@@ -48,7 +50,7 @@ function findChildNode (node: Node, predicate: Function, depth = 0): Node {
                 }
             }
         }
-        else if (stringifiedNode === '[object Object]') {
+        else if (stringifiedNode === '[object Object]' && childNode['type'] !== Syntax.BlockStatement) {
             // @ts-ignore
             const resultNode = findChildNode(childNode!, predicate, depth + 1);
 
