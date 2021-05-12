@@ -26,7 +26,6 @@ const noBuild             = process.argv.includes('--no-build');
 
 ll
     .install()
-    .tasks('lint')
     .onlyInDebug([
         'server-scripts',
         'client-scripts-bundle'
@@ -137,7 +136,6 @@ gulp.task('build',
         gulp.parallel(
             'client-scripts',
             'templates',
-            'lint'
         )
     )
 );

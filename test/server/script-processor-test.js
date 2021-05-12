@@ -824,6 +824,7 @@ describe('Script processor', () => {
 
     describe('Destructuring', () => {
         it('object pattern declaration', () => {
+
             testProcessing([
                 {
                     src:      'var { location, href } = some;',
@@ -1151,6 +1152,51 @@ describe('Script processor', () => {
                               '    return (_hh$temp1 = e, a = _hh$temp1[0], b = _hh$temp1[1], _hh$temp1);' +
                               '}'
                 }
+            ]);
+        });
+/*
+for (let [a] of q) { let a = w.a; }
+*/
+        it.only('destructuring and duplicate declaration', () => {
+            testProcessing([
+                {
+                    src: 'for (let [a] of q) { let a = 1; }',
+
+                    expected: 'for (let_hh$temp0 of q) { let _hh$temp1 = _hh$temp0[0]; let a = 1;}'
+                },
+                {
+                    src: 'for (let [a, b] of q) { let a = 1; }',
+
+                    expected: 'for (let _hh$temp0 of q) { let _hh$temp1 = _hh$temp0[0], b =_hh$temp0[1]; let a = 1;}'
+                },
+                {
+                    src: 'for (let [b, a] of q) { let a = 1; }',
+
+                    expected: 'for (let _hh$temp0 of q) { let b = _hh$temp0[0], _hh$temp1 = _hh$temp0[1]; let a = 1;}'
+                },
+                // NOTE: it's ok that we do not replace the `a` variable inside the `console.log` method`
+                // since we expect to get the `Cannot access 'a' before initialization` error message
+                {
+                    src: 'for (let [b, a] of q) { console.log(a); let a = 1; }',
+
+                    expected: 'for (let _hh$temp0 of q) { let b = _hh$temp0[0], _hh$temp1 = _hh$temp0[1]; console.log(a); let a = 1;}'
+                },
+                // NOTE: test
+                // {
+                //     src: 'for (let [a] of q) { if (true) { let a = 1; } }',
+                //
+                //     expected: 'for (let _hh$temp0 of q) { let a = _hh$temp0[0]; if (true) { let a = 1; }}'
+                // },
+                {
+                    src: 'for (let {a} of q) { let a = 1; }',
+
+                    expected: 'for (let _hh$temp0 of q){ let _hh$temp1 = _hh$temp0._hh$temp1; let a = 1; }'
+                },
+                {
+                    src: 'for (let {b, a} of q) { let a = 1; }',
+
+                    expected: 'for (let _hh$temp0 of q) { let b = _hh$temp0.b, _hh$temp1 = _hh$temp0._hh$temp1; let a = 1; }'
+                },
             ]);
         });
 
