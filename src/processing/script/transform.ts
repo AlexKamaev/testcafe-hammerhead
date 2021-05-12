@@ -60,8 +60,6 @@ function getChange (node: Node, parentType: Node['type']): CodeChange {
     return { start, end, node, parentType };
 }
 
-const stacked = [];
-
 function transformChildNodes (node: Node, changes: CodeChange[], state: State, tempVars: TempVariables) {
     // @ts-ignore
     const nodeKeys: (keyof Node)[] = objectKeys(node);
@@ -156,30 +154,6 @@ function findTransformer (node: Node, parent: Node): Transformer<any> | null {
 function transform<T extends Node> (node: Node, changes: CodeChange[], state: State, parent: T, key: keyof T, tempVars: TempVariables) {
     const allowTempVarAdd = node.type === Syntax.BlockStatement;
     let nodeTransformed   = false;
-
-
-    if (node.type === Syntax.ForOfStatement || node.type === Syntax.BlockStatement) {
-        stacked.push(JSON.parse(JSON.stringify(node)));
-    }
-
-    if (node.type === Syntax.VariableDeclaration) {
-        // const stackedLength = stacked && stacked.length;
-        //
-        // if (stackedLength >= 2 && stacked[stackedLength - 1].type === Syntax.BlockStatement && stacked[stackedLength - 2].type === Syntax.ForOfStatement) {
-        //     if (!isNodeTransformed(node)) {
-        //
-        //         debugger;
-        //
-        //         // @ts-ignore
-        //         if (node.declarations[0].id.name === stacked[stackedLength - 2].left.declarations[0].id.elements[0].name) {
-        //             debugger;
-        //         }
-        //     }
-        // }
-    }
-
-
-
 
     if (allowTempVarAdd)
         tempVars = new TempVariables();

@@ -1154,10 +1154,8 @@ describe('Script processor', () => {
                 }
             ]);
         });
-/*
-for (let [a] of q) { let a = w.a; }
-*/
-        it.only('destructuring and duplicate declaration', () => {
+
+        it('destructuring and duplicate declaration', () => {
             testProcessing([
                 {
                     src: 'for (let [a] of q) { let a = 1; }',
