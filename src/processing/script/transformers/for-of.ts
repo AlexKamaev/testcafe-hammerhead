@@ -2,7 +2,15 @@
 // WARNING: this file is used by both the client and the server.
 // Do not use any browser or node-specific API!
 // -------------------------------------------------------------
-import { BlockStatement, Declaration, ForOfStatement, Node, Pattern, Statement, VariableDeclaration } from 'estree';
+import {
+    BlockStatement,
+    Declaration,
+    ForOfStatement, Identifier,
+    Node,
+    Pattern,
+    Statement,
+    VariableDeclaration
+} from 'estree';
 import { Transformer } from './index';
 import { Syntax } from 'esotope-hammerhead';
 import {
@@ -66,13 +74,9 @@ import TempVariables from './temp-variables';
 //     return null;
 // }
 
-function findChildNode (node: BlockStatement, predicate: Function, depth = 0): Node {
-    debugger;
-
-    console.log(predicate);
-    console.log(depth);
-
+function findDeclarator (node: BlockStatement, predicate: Function): Node {
     const declarators = [];
+
     for (const statement of node.body) {
         if (statement.type === Syntax.VariableDeclaration)
             declarators.push(...statement.declarations);
@@ -86,28 +90,24 @@ function findChildNode (node: BlockStatement, predicate: Function, depth = 0): N
     return null;
 }
 
-function replaceDuplicateLoopDeclarations (forOfLeft: VariableDeclaration, node: ForOfStatement) {
-    let nodeToReplace = null;
+function replaceDuplicateDeclarators (forOfNode: ForOfStatement) {
+    const forOfLeft = forOfNode.left as VariableDeclaration;
+    let replacer    = null;
 
-    const elements = forOfLeft.declarations[0].id['elements'];
-
-    if (!elements)
+    if (!forOfLeft.declarations.length || forOfLeft.declarations[0].id.type !== Syntax.ArrayPattern)
         return;
 
+    const leftIdentifiers = Object.values(forOfLeft.declarations[0].id.elements || []) as Array<Identifier>;
 
-    const childDeclaration = findChildNode(node.body as BlockStatement, (n) => {
-        if (forOfLeft.declarations[0].id.type === Syntax.ArrayPattern) {
-            const leftDeclarations = Object.values(elements);
+    const childDeclaration = findDeclarator(forOfNode.body as BlockStatement, node => {
+        if (node.id.type !== Syntax.Identifier)
+            return false;
 
-            if (n.type === Syntax.VariableDeclarator && n.id.type === Syntax.Identifier) {
-                for (const ld of leftDeclarations) {
-                    // @ts-ignore
-                    if (ld.name === n.id.name) {
-                        nodeToReplace = ld;
+        for (const identifier of leftIdentifiers) {
+            if (identifier.name === node.id.name) {
+                replacer = identifier;
 
-                        return true;
-                    }
-                }
+                return true;
             }
         }
 
@@ -117,8 +117,7 @@ function replaceDuplicateLoopDeclarations (forOfLeft: VariableDeclaration, node:
     if (childDeclaration) {
         const destIdentifier = createIdentifier(TempVariables.generateName());
 
-        // @ts-ignore
-        replaceNode(nodeToReplace, destIdentifier, forOfLeft.declarations[0].id, 'elements');
+        replaceNode(replacer, destIdentifier, forOfLeft.declarations[0].id, 'elements');
     }
 }
 
@@ -143,9 +142,7 @@ const transformer: Transformer<ForOfStatement> = {
         let statementWithTempAssignment: Statement | Declaration;
 
         if (forOfLeft.type === Syntax.VariableDeclaration) {
-            if (node.body.type === Syntax.BlockStatement) {
-                replaceDuplicateLoopDeclarations(forOfLeft, node);
-            }
+            replaceDuplicateDeclarators(node);
 
             statementWithTempAssignment = createVariableDeclaration(forOfLeft.kind, [
                 createVariableDeclarator(forOfLeft.declarations[0].id, tempIdentifier)

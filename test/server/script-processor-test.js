@@ -1182,6 +1182,11 @@ describe('Script processor', () => {
 
                     expected: 'for (let _hh$temp0 of q) { let _hh$temp1 = _hh$temp0[0], b=_hh$temp0[1]; let a = 1, b = 2;}'
                 },
+                {
+                    src: 'for (let [a] of q) { let [a] = q; }',
+
+                    expected: 'for (let _hh$temp0 of q) { let a = _hh$temp0[0]; let _hh$temp1 = q, a = _hh$temp1[0]; }'
+                },
                 // NOTE: it's ok that we do not replace the `a` variable inside the `console.log` method`
                 // since we expect to get the `Cannot access 'a' before initialization` error message
                 {
