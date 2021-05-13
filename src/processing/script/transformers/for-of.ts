@@ -76,6 +76,9 @@ import TempVariables from './temp-variables';
 
 function findDeclarator (node: BlockStatement, predicate: Function): Node {
     const declarators = [];
+    const identifiers = [];
+
+    debugger;
 
     for (const statement of node.body) {
         if (statement.type === Syntax.VariableDeclaration)
@@ -83,8 +86,18 @@ function findDeclarator (node: BlockStatement, predicate: Function): Node {
     }
 
     for (const declarator of declarators) {
-        if (predicate(declarator))
-            return declarator;
+        if (declarator.type === Syntax.VariableDeclarator) {
+            if (declarator.id.type === Syntax.Identifier)
+                identifiers.push(declarator.id);
+
+            if (declarator.id.type === Syntax.ArrayPattern)
+                identifiers.push(...declarator.id.elements);
+        }
+    }
+
+    for (const identifier of identifiers) {
+        if (predicate(identifier))
+            return identifier;
     }
 
     return null;
@@ -100,11 +113,11 @@ function replaceDuplicateDeclarators (forOfNode: ForOfStatement) {
     const leftIdentifiers = Object.values(forOfLeft.declarations[0].id.elements || []) as Array<Identifier>;
 
     const childDeclaration = findDeclarator(forOfNode.body as BlockStatement, node => {
-        if (node.id.type !== Syntax.Identifier)
+        if (node.type !== Syntax.Identifier)
             return false;
 
         for (const identifier of leftIdentifiers) {
-            if (identifier.name === node.id.name) {
+            if (identifier.name === node.name) {
                 replacer = identifier;
 
                 return true;
@@ -142,6 +155,8 @@ const transformer: Transformer<ForOfStatement> = {
         let statementWithTempAssignment: Statement | Declaration;
 
         if (forOfLeft.type === Syntax.VariableDeclaration) {
+            debugger;
+
             replaceDuplicateDeclarators(node);
 
             statementWithTempAssignment = createVariableDeclaration(forOfLeft.kind, [
