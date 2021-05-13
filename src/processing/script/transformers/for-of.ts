@@ -2,7 +2,7 @@
 // WARNING: this file is used by both the client and the server.
 // Do not use any browser or node-specific API!
 // -------------------------------------------------------------
-import { Declaration, ForOfStatement, Node, Pattern, Statement, VariableDeclaration } from 'estree';
+import { BlockStatement, Declaration, ForOfStatement, Node, Pattern, Statement, VariableDeclaration } from 'estree';
 import { Transformer } from './index';
 import { Syntax } from 'esotope-hammerhead';
 import {
@@ -20,43 +20,67 @@ import TempVariables from './temp-variables';
 // for (let {href, postMessage} of wins) {} -->
 // for (let _hh$temp0 of wins) { let {href, postMessage} = _hh$temp0; }
 
-const objectToString = Object.prototype.toString;
-const objectKeys     = Object.keys;
+// const objectToString = Object.prototype.toString;
+// const objectKeys     = Object.keys;
+//
+// function shouldProcessNode (node: Node) {
+//     return node && (node.type === Syntax.VariableDeclaration || node.type === Syntax.VariableDeclarator);
+// }
 
-function findChildNode (node: Node, predicate: Function, depth = 0): Node {
-    // @ts-ignore
-    const nodeKeys: (keyof Node)[] = objectKeys(node);
+// function findChildNode (node: Node, predicate: Function, depth = 0): Node {
+//     // @ts-ignore
+//     const nodeKeys: (keyof Node)[] = objectKeys(node);
+//
+//     debugger;
+//
+//     if (predicate(node, depth))
+//         return node;
+//
+//     for (const key of nodeKeys) {
+//         const childNode       = node[key];
+//         const stringifiedNode = objectToString.call(childNode);
+//
+//         if (stringifiedNode === '[object Array]') {
+//             // @ts-ignore
+//             const childNodes = childNode as Node[];
+//
+//             for (const nthNode of childNodes) {
+//                 // NOTE: Some items of ArrayExpression can be null
+//                 if (shouldProcessNode(nthNode)) {
+//                     const resultNode = findChildNode(nthNode, predicate, depth + 1);
+//
+//                     if (resultNode)
+//                         return resultNode;
+//                 }
+//             }
+//         }
+//         // else if (stringifiedNode === '[object Object]' && shouldProcessNode(childNode as unknown as Node)) {
+//         //     // @ts-ignore
+//         //     const resultNode = findChildNode(childNode!, predicate, depth + 1);
+//         //
+//         //     if(resultNode)
+//         //         return resultNode;
+//         // }
+//     }
+//
+//     return null;
+// }
 
+function findChildNode (node: BlockStatement, predicate: Function, depth = 0): Node {
     debugger;
 
-    if (predicate(node, depth))
-        return node;
+    console.log(predicate);
+    console.log(depth);
 
-    for (const key of nodeKeys) {
-        const childNode       = node[key];
-        const stringifiedNode = objectToString.call(childNode);
+    const declarators = [];
+    for (const statement of node.body) {
+        if (statement.type === Syntax.VariableDeclaration)
+            declarators.push(...statement.declarations);
+    }
 
-        if (stringifiedNode === '[object Array]') {
-            // @ts-ignore
-            const childNodes = childNode as Node[];
-
-            for (const nthNode of childNodes) {
-                // NOTE: Some items of ArrayExpression can be null
-                if (nthNode && nthNode.type !== Syntax.BlockStatement) {
-                    const resultNode = findChildNode(nthNode, predicate, depth + 1);
-
-                    if (resultNode)
-                        return resultNode;
-                }
-            }
-        }
-        else if (stringifiedNode === '[object Object]' && childNode['type'] !== Syntax.BlockStatement) {
-            // @ts-ignore
-            const resultNode = findChildNode(childNode!, predicate, depth + 1);
-
-            if(resultNode)
-                return resultNode;
-        }
+    for (const declarator of declarators) {
+        if (predicate(declarator))
+            return declarator;
     }
 
     return null;
@@ -71,7 +95,7 @@ function replaceDuplicateLoopDeclarations (forOfLeft: VariableDeclaration, node:
         return;
 
 
-    const childDeclaration = findChildNode(node.body, (n) => {
+    const childDeclaration = findChildNode(node.body as BlockStatement, (n) => {
         if (forOfLeft.declarations[0].id.type === Syntax.ArrayPattern) {
             const leftDeclarations = Object.values(elements);
 

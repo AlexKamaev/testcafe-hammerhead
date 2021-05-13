@@ -1155,7 +1155,7 @@ describe('Script processor', () => {
             ]);
         });
 
-        it('destructuring and duplicate declaration', () => {
+        it.only('destructuring and duplicate declaration', () => {
             testProcessing([
                 {
                     src: 'for (let [a] of q) { let a = 1; }',
@@ -1172,6 +1172,16 @@ describe('Script processor', () => {
 
                     expected: 'for (let _hh$temp0 of q) { let b = _hh$temp0[0], _hh$temp1 = _hh$temp0[1]; let a = 1;}'
                 },
+                {
+                    src: 'for (let [a, b] of q) { let a = 1; let b = 2; }',
+
+                    expected: 'for (let _hh$temp0 of q) { let _hh$temp1 = _hh$temp0[0], b=_hh$temp0[1]; let a = 1; let b = 2;}'
+                },
+                {
+                    src: 'for (let [a, b] of q) { let a = 1, b = 2; }',
+
+                    expected: 'for (let _hh$temp0 of q) { let _hh$temp1 = _hh$temp0[0], b=_hh$temp0[1]; let a = 1, b = 2;}'
+                },
                 // NOTE: it's ok that we do not replace the `a` variable inside the `console.log` method`
                 // since we expect to get the `Cannot access 'a' before initialization` error message
                 {
@@ -1184,6 +1194,11 @@ describe('Script processor', () => {
                     src: 'for (let [a] of q) { if (true) { let a = 1; } }',
 
                     expected: 'for (let _hh$temp0 of q) { let a = _hh$temp0[0]; if (true) { let a = 1; }}'
+                },
+                {
+                    src: 'for (let [a] of q) { for (let a = 1; a < 5; a++) {} }',
+
+                    expected: 'for (let _hh$temp0 of q) { let a = _hh$temp0[0]; for (let a = 1; a < 5; a++) { } }'
                 }
             ]);
         });
