@@ -1189,7 +1189,7 @@ describe('Script processor', () => {
 
                     expected: 'for (let _hh$temp0 of q) { let b = _hh$temp0[0], _hh$temp1 = _hh$temp0[1]; console.log(a); let a = 1;}'
                 },
-                // NOTE: we should rename the `for-of left` var only if we redeclare it on the root level
+                // NOTE: we should not rename the `for-of left` var if it is redeclared in the deeper statement
                 {
                     src: 'for (let [a] of q) { if (true) { let a = 1; } }',
 
